@@ -76,6 +76,12 @@
     - name: sentry_dns
       prompt: Sentry DNS (e.g. https://0123456789abcdef0123456789abcdef:0123456789abcdef0123456789abcdef@sentry.io/1234567)
       private: yes
+    - name: aws_access_key_id
+      prompt: AWS access key ID (e.g. ABCDEFGHIJ0123456789)
+      private: yes
+    - name: aws_secret_access_key
+      prompt: AWS secret access key (e.g. 1234567890AbCdEfGhIjKlMnOpQrStUvWxYz0123)
+      private: yes
   tasks:
     - name: Download Node.js setup script
       get_url:
@@ -166,6 +172,23 @@
       apt:
         name: jq
       become: True
+
+    - name: Install s3fs
+      apt:
+        name: s3fs
+      become: True
+    - name: Configure s3fs
+      template:
+        src: passwd-s3fs.j2
+        dest: /home/ubuntu/.passwd-s3fs
+        mode: 0400
+    - name: Create ~/s3/
+      file:
+        path: /home/ubuntu/s3
+        state: directory
+        mode: 0700
+    - name: Run s3fs
+      command: s3fs ghuser /home/ubuntu/s3 -ouse_cache=/tmp/s3
 
     - name: Hint
       vars:
